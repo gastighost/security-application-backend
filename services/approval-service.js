@@ -1,6 +1,7 @@
 const Approval = require("../models/Approval");
 const EntryExit = require("../models/EntryExit");
 const createError = require("../utils/create-error");
+const { parseDate } = require("../utils/utils");
 
 class ApprovalService {
   async getAll(userId, locationId, username) {
@@ -52,6 +53,36 @@ class ApprovalService {
   }
 
   async create({ userId, locationId, dateTimeFrom, dateTimeTo, purpose }) {
+    const approvals = await Approval.find({ userId, locationId });
+
+    const sameDateTimeFrom = approvals.some((approval) => {
+      return (
+        parseDate(approval.dateTimeFrom) <= parseDate(dateTimeFrom) &&
+        parseDate(dateTimeFrom) <= parseDate(approval.dateTimeTo)
+      );
+    });
+
+    if (sameDateTimeFrom) {
+      throw createError(
+        "Starting date overlaps with another existing approval",
+        400
+      );
+    }
+
+    const sameDateTimeTo = approvals.some((approval) => {
+      return (
+        parseDate(approval.dateTimeFrom) <= parseDate(dateTimeTo) &&
+        parseDate(dateTimeTo) <= parseDate(approval.dateTimeTo)
+      );
+    });
+
+    if (sameDateTimeTo) {
+      throw createError(
+        "Ending date overlaps with another existing approval",
+        400
+      );
+    }
+
     const newApproval = await Approval.create({
       userId,
       locationId,
