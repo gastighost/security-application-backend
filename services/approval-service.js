@@ -37,7 +37,7 @@ class ApprovalService {
   async getOne(approvalId, userId) {
     const approval = await Approval.findById(approvalId).populate([
       "locationId",
-      "userId",
+      { path: "userId", select: "-password" },
       { path: "validatedBy", select: "-password" },
     ]);
 
