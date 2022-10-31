@@ -7,6 +7,10 @@ const approvalSchema = new Schema(
       ref: "User",
       required: true,
     },
+    username: {
+      type: String,
+      required: true,
+    },
     locationId: {
       type: Schema.Types.ObjectId,
       ref: "Location",

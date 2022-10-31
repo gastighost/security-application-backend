@@ -1,4 +1,5 @@
 const Approval = require("../models/Approval");
+const User = require("../models/User");
 const EntryExit = require("../models/EntryExit");
 const createError = require("../utils/create-error");
 const { parseDate } = require("../utils/utils");
@@ -13,7 +14,10 @@ class ApprovalService {
       limit = 10;
     }
 
-    const approvals = await Approval.find({ locationId })
+    const approvals = await Approval.find({
+      locationId,
+      username: new RegExp(username, "gi"),
+    })
       .populate([
         "locationId",
         { path: "userId", select: "-password" },
@@ -28,12 +32,6 @@ class ApprovalService {
         (id) => id.toString() === userId.toString()
       )
     );
-
-    if (username) {
-      filteredApprovals = filteredApprovals.filter((approval) => {
-        return approval.userId?.username?.match(new RegExp(username, "gi"));
-      });
-    }
 
     const objectFilteredApprovals = filteredApprovals.map((approval) => {
       const objectApproval = approval.toObject();
@@ -93,8 +91,11 @@ class ApprovalService {
       );
     }
 
+    const user = await User.findById(userId);
+
     const newApproval = await Approval.create({
       userId,
+      username: user.username,
       locationId,
       dateTimeFrom,
       dateTimeTo,
