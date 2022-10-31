@@ -4,14 +4,24 @@ const createError = require("../utils/create-error");
 const { parseDate } = require("../utils/utils");
 
 class ApprovalService {
-  async getAll(userId, locationId, username) {
+  async getAll(userId, locationId, username, page) {
+    let skip;
+    let limit;
+
+    if (page) {
+      skip = (page - 1) * 10;
+      limit = 10;
+    }
+
     const approvals = await Approval.find({ locationId })
       .populate([
         "locationId",
         { path: "userId", select: "-password" },
         "validatedBy",
       ])
-      .sort("-createdAt");
+      .sort("-createdAt")
+      .skip(skip)
+      .limit(limit);
 
     let filteredApprovals = approvals.filter((approval) =>
       approval.locationId?.adminIds?.some(

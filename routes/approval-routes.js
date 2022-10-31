@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { body } = require("express-validator");
+const { body, query } = require("express-validator");
 const {
   createApproval,
   getAllApprovals,
@@ -14,7 +14,17 @@ const auth = require("../middleware/auth");
 const router = Router();
 
 // ** Admins can get all approvals under a particular location with the option to query by username
-router.get("/:locationId", auth, getAllApprovals);
+router.get(
+  "/:locationId",
+  auth,
+  [
+    query("page", "Page must be a valid number above 0")
+      .optional()
+      .isInt({ min: 1 })
+      .toInt(),
+  ],
+  getAllApprovals
+);
 
 // ** Get individual approval details by approval id
 router.get("/approval-details/:approvalId", auth, getOneApproval);

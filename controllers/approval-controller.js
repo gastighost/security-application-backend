@@ -3,11 +3,18 @@ const asyncWrapper = require("../utils/async-wrapper");
 const validationError = require("../utils/validation-error");
 
 const getAllApprovals = asyncWrapper(async (req, res) => {
+  validationError(req);
+
   const { userId } = req.user;
-  const { username } = req.query;
+  const { username, page } = req.query;
   const { locationId } = req.params;
 
-  const approvals = await ApprovalService.getAll(userId, locationId, username);
+  const approvals = await ApprovalService.getAll(
+    userId,
+    locationId,
+    username,
+    page
+  );
 
   res
     .status(200)
